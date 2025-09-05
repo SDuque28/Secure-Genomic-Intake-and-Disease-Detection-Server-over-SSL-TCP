@@ -6,67 +6,85 @@ import javax.net.ssl.SSLContext;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class TCPServer2 {
-    private int serverPort;
-    private SSLContext sslContext;
+public record TCPServer(int serverPort, SSLContext sslContext) {
 
-    // Constructor with SSLContext
-    public TCPServer2(int serverPort, SSLContext sslContext){
-        this.serverPort = serverPort;
-        this.sslContext = sslContext;
-    }
-
-    // Keep original constructor for backward compatibility
-    public TCPServer2(int serverPort){
-        this.serverPort = serverPort;
-        this.sslContext = null;
-    }
-
-    public void start(){
-        try{
-            SSLServerSocketFactory sslSocketFactory;
-
-            if (sslContext != null) {
-                // Use the provided SSLContext
-                sslSocketFactory = sslContext.getServerSocketFactory();
-            } else {
-                // Fallback to default (may not work with certificates)
-                sslSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-            }
-
-            SSLServerSocket serverSocket = (SSLServerSocket) sslSocketFactory.createServerSocket(serverPort);
-
-            // Optional: Configure SSL parameters
-            // serverSocket.setEnabledCipherSuites(sslSocketFactory.getSupportedCipherSuites());
-            // serverSocket.setNeedClientAuth(false);
+    public void start() {
+        // Create a thread pool to handle multiple clients
+        ExecutorService threadPool = Executors.newCachedThreadPool();
+        try {
+            SSLServerSocket serverSocket = getSslServerSocket();
 
             System.out.println("SSL Server started on port: " + serverPort);
-            System.out.println("Enabled protocols: " + java.util.Arrays.toString(serverSocket.getEnabledProtocols()));
-            System.out.println("Enabled ciphers: " + java.util.Arrays.toString(serverSocket.getEnabledCipherSuites()));
+            System.out.println("Enabled protocols: " + Arrays.toString(serverSocket.getEnabledProtocols()));
+            System.out.println("Ready to handle multiple simultaneous connections...");
 
-            while(true){
+            while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
 
-                DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
-                DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-
-                String message = dis.readUTF();
-                String[] parts = message.split(":");
-                System.out.println("Received message: " + message);
-
-                String response = "Name "+parts[0]+" Last Name "+parts[1];
-                out.writeUTF(response);
-
-                clientSocket.close();
-                System.out.println("Client disconnected");
+                threadPool.execute(new ClientHandler(clientSocket));
             }
         } catch (IOException e) {
             System.out.println("Server error: " + e.getMessage());
-            e.printStackTrace();
         }
     }
+
+    private SSLServerSocket getSslServerSocket() throws IOException {
+        SSLServerSocketFactory sslSocketFactory;
+
+        if (sslContext != null) {
+            // Use the provided SSLContext
+            sslSocketFactory = sslContext.getServerSocketFactory();
+        } else {
+            // Fallback to default (may not work with certificates)
+            sslSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        }
+
+        return (SSLServerSocket) sslSocketFactory.createServerSocket(serverPort);
+    }
+
+    // Inner class to handle each client connection in a separate thread
+        private record ClientHandler(Socket clientSocket) implements Runnable {
+
+        @Override
+            public void run() {
+                try (DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
+                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
+
+                    String message = dis.readUTF();
+                    String[] parts = message.split(":");
+                    System.out.println("[" + Thread.currentThread().getName() + "] Received from " +
+                            clientSocket.getRemoteSocketAddress() + ": " + message);
+
+                    // Simulate some processing time to demonstrate concurrency
+                    try {
+                        Thread.sleep(2000); // 2 seconds processing time
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+
+                    String response = "Name " + parts[0] + " Last Name " + parts[1];
+                    out.writeUTF(response);
+
+                    System.out.println("[" + Thread.currentThread().getName() + "] Response sent to " +
+                            clientSocket.getRemoteSocketAddress());
+
+                } catch (IOException e) {
+                    System.out.println("Error handling client " + clientSocket.getRemoteSocketAddress() + ": " + e.getMessage());
+                } finally {
+                    try {
+                        clientSocket.close();
+                        System.out.println("[" + Thread.currentThread().getName() + "] Client disconnected: " +
+                                clientSocket.getRemoteSocketAddress());
+                    } catch (IOException e) {
+                        System.out.println("Error closing client socket: " + e.getMessage());
+                    }
+                }
+            }
+        }
 }

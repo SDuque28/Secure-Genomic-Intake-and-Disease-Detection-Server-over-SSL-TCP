@@ -10,7 +10,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Main2 {
+public class Main {
     public static void main(String[] args) {
         Properties p = new Properties();
         try (InputStream input = Main.class.getClassLoader().getResourceAsStream("configuration.properties")) {
@@ -29,9 +29,6 @@ public class Main2 {
             // Load the keystore from classpath
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             try (InputStream keyStoreStream = Main.class.getClassLoader().getResourceAsStream(certificateRoute)) {
-                if (keyStoreStream == null) {
-                    throw new IOException("Certificate file not found in classpath: " + certificateRoute);
-                }
                 keyStore.load(keyStoreStream, certificatePassword.toCharArray());
             }
 
@@ -50,12 +47,11 @@ public class Main2 {
             System.out.println("SSL Context created successfully with protocol: " + sslContext.getProtocol());
 
             // Pass the SSLContext to your TCPServer
-            TCPServer2 server = new TCPServer2(2020, sslContext);
+            TCPServer server = new TCPServer(2020, sslContext);
             server.start();
 
         } catch (Exception e) {
             System.err.println("Error setting up SSL: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }
