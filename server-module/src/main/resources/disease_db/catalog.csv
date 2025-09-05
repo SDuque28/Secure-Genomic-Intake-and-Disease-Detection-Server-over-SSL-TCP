@@ -1,0 +1,9 @@
+id, disease_name, code
+disease_001, diabetes-mellitus_tipo2, ACTG
+disease_002, hipertension-arterial, GNTA
+disease_003, asma, CTNA
+disease_004, artritis_reumatoide, TGAC
+disease_005, enfermedad_azheimer, NAGC
+disease_006, cancer_pulmón, TCGN
+disease_007, vih_sida, CGAT
+disease_008, enfermedad_parkinon, ANTC
