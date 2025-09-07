@@ -1,7 +1,19 @@
 package com.genomic.common.util;
 
+/**
+ * SequenceAligner - Provides genomic sequence alignment and similarity calculation
+ * Implements the Needleman-Wunsch algorithm for global sequence alignment
+ * Used for comparing patient genomic sequences against disease reference sequences
+ */
 public class SequenceAligner {
 
+    /**
+     * Calculates similarity between two genomic sequences using Needleman-Wunsch algorithm
+     * Performs global sequence alignment and returns normalized similarity score
+     * @param seq1 first genomic sequence (typically patient sequence)
+     * @param seq2 second genomic sequence (typically disease reference sequence)
+     * @return similarity score between 0.0 (no similarity) and 1.0 (perfect match)
+     */
     public static double calculateSimilarity(String seq1, String seq2) {
         // Basic implementation of Needleman-Wunsch algorithm
         int gapPenalty = -2;
@@ -45,6 +57,15 @@ public class SequenceAligner {
         return Math.max(0, Math.min(1, similarity)); // Clamp between 0 and 1
     }
 
+    /**
+     * Quickly determines if two sequences are potential matches
+     * Uses length-based pre-filtering before expensive alignment
+     * @param patientSeq patient genomic sequence
+     * @param diseaseSeq disease reference sequence
+     * @param threshold minimum similarity threshold (0.0 to 1.0)
+     * @return true if sequences are potential matches above the threshold
+     * @throws IllegalArgumentException if threshold is not in [0, 1] range
+     */
     public static boolean isPotentialMatch(String patientSeq, String diseaseSeq, double threshold) {
         // Quick check for obvious non-matches first
         if (patientSeq.length() < diseaseSeq.length() * 0.5) {

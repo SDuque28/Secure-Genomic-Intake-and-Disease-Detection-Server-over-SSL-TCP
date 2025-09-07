@@ -16,6 +16,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * PatientService - Manages patient records and genomic data operations
+ * Handles patient CRUD operations, FASTA file storage, and disease detection
+ */
 public class PatientService {
     private final Map<String, Patient> patients = new ConcurrentHashMap<>();
     private final AtomicInteger patientCounter = new AtomicInteger(1);
@@ -23,6 +27,11 @@ public class PatientService {
     private final String patientCsvFile;
     private DiseaseService diseaseService;
 
+    /**
+     * Initializes the PatientService with disease service dependency
+     * @param diseaseService the disease service for genomic matching
+     * @throws ProtocolException if initialization fails
+     */
     public PatientService(DiseaseService diseaseService) throws ProtocolException {
         this.diseaseService = diseaseService;
         try {
@@ -53,7 +62,11 @@ public class PatientService {
         }
     }
 
-    // Add disease checking method:
+    /**
+     * Check for the diseases of the patient
+     * @param patient the patient to check
+     * @param fastaContent the fasta content of the diseases
+     */
     private void checkForDiseases(Patient patient, String fastaContent) {
         try {
             System.out.println("=== DISEASE DETECTION START ===");
@@ -83,6 +96,13 @@ public class PatientService {
         }
     }
 
+    /**
+     * Creates a new patient with metadata and genomic data
+     * @param metadata JSON object containing patient demographic information
+     * @param fastaContent genomic sequence data in FASTA format
+     * @return generated patient ID
+     * @throws ProtocolException if creation fails due to validation or duplication
+     */
     public String createPatient(JSONObject metadata, String fastaContent) throws ProtocolException {
         try {
             // Validate FASTA format
@@ -137,6 +157,12 @@ public class PatientService {
         }
     }
 
+    /**
+     * Retrieves patient information by ID
+     * @param patientId the patient identifier
+     * @return JSON object containing patient data
+     * @throws ProtocolException if patient not found or inactive
+     */
     public JSONObject getPatient(String patientId) throws ProtocolException {
         Patient patient = patients.get(patientId);
         if (patient == null || !patient.isActive()) {
@@ -147,6 +173,13 @@ public class PatientService {
         return convertPatientToJson(patient);
     }
 
+    /**
+     * Updates an existing patient's information
+     * @param patientId the patient identifier
+     * @param metadata updated patient metadata
+     * @param fastaContent updated genomic data (optional)
+     * @throws ProtocolException if patient not found or update fails
+     */
     public void updatePatient(String patientId, JSONObject metadata, String fastaContent) throws ProtocolException {
         Patient patient = patients.get(patientId);
         if (patient == null || !patient.isActive()) {
@@ -184,6 +217,11 @@ public class PatientService {
         }
     }
 
+    /**
+     * Logically deletes a patient (marks as inactive)
+     * @param patientId the patient identifier
+     * @throws ProtocolException if patient not found
+     */
     public void deletePatient(String patientId) throws ProtocolException, IOException {
         Patient patient = patients.get(patientId);
         if (patient == null) {
@@ -195,11 +233,17 @@ public class PatientService {
         updatePatientInCsv(patient);
     }
 
+    /**
+     * Checks if a document ID already exists in active patients
+     */
     private boolean isDuplicateDocumentId(String documentId) {
         return patients.values().stream()
                 .anyMatch(p -> p.isActive() && p.getDocumentId().equals(documentId));
     }
 
+    /**
+     * Saves FASTA content to file
+     */
     private String saveFastaFile(String patientId, String fastaContent) throws IOException {
         String filename = patientId + ".fasta";
         Path filePath = patientsDirectory.resolve(filename);
@@ -211,6 +255,9 @@ public class PatientService {
         return filename;
     }
 
+    /**
+     * Loads patients from CSV file into memory
+     */
     private void loadPatientsFromCsv() throws IOException {
         Path path = Paths.get(patientCsvFile);
         if (!Files.exists(path)) {
@@ -239,6 +286,9 @@ public class PatientService {
         }
     }
 
+    /**
+     * Creates Patient object from CSV values
+     */
     private static Patient getPatient(String[] values) {
         Patient patient = new Patient();
         patient.setPatientId(values[0]);
@@ -256,12 +306,18 @@ public class PatientService {
         return patient;
     }
 
+    /**
+     * Appends a patient record to CSV file
+     */
     private void savePatientToCsv(Patient patient) throws IOException {
         try (PrintWriter writer = new PrintWriter(new FileWriter(patientCsvFile, true))) {
             writer.println(convertPatientToCsv(patient));
         }
     }
 
+    /**
+     * Updates the patient counter based on loaded patient ID
+     */
     private void updatePatientInCsv(Patient patient) throws IOException {
         // This is a simplified implementation - in production, you'd want a proper database
         List<String> lines = Files.readAllLines(Paths.get(patientCsvFile));
@@ -279,6 +335,9 @@ public class PatientService {
         }
     }
 
+    /**
+     * Converts Patient object to CSV line
+     */
     private String convertPatientToCsv(Patient patient) {
         return String.join(",",
                 patient.getPatientId(),
@@ -296,6 +355,9 @@ public class PatientService {
         );
     }
 
+    /**
+     * Converts Patient object to JSON for client response
+     */
     private JSONObject convertPatientToJson(Patient patient) {
         JSONObject json = new JSONObject();
         json.put("patientId", patient.getPatientId());

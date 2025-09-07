@@ -9,8 +9,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * ProtocolHandler - Handles client requests and processes genomic protocol commands
+ * Each instance handles a single client connection in a separate thread
+ */
 public record ProtocolHandler(Socket clientSocket, PatientService patientService) {
 
+    /**
+     * Processes a client request from start to finish
+     * Handles reading, parsing, processing, and response sending
+     */
     public void handleRequest() {
         try (DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
              DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream())) {
@@ -60,6 +68,9 @@ public record ProtocolHandler(Socket clientSocket, PatientService patientService
         }
     }
 
+    /**
+     * Processes the protocol request and returns appropriate response
+     */
     private ProtocolResponse processRequest(ProtocolRequest request) {
         try {
             switch (request.getCommand()) {

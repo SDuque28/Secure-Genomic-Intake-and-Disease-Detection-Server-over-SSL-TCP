@@ -5,6 +5,11 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
+/**
+ * ProtocolRequest - Parses and validates genomic protocol request messages
+ * Handles the parsing of raw protocol messages into structured request objects
+ * Supports all CRUD operations with proper validation and error handling
+ */
 @Getter
 public class ProtocolRequest {
     // Getters
@@ -13,10 +18,21 @@ public class ProtocolRequest {
     private JSONObject metadata;
     private String fastaContent;
 
+    /**
+     * Constructs a ProtocolRequest by parsing a raw protocol message
+     * @param rawRequest the raw protocol message string to parse
+     * @throws ProtocolException if the request is malformed or invalid
+     */
     public ProtocolRequest(String rawRequest) throws ProtocolException {
         parseRequest(rawRequest);
     }
 
+    /**
+     * Parses the raw request string into structured components
+     * Validates command format, required parameters, and data integrity
+     * @param rawRequest the raw protocol message to parse
+     * @throws ProtocolException if parsing fails or validation errors occur
+     */
     private void parseRequest(String rawRequest) throws ProtocolException {
         try {
             System.out.println("Parsing raw request: " + rawRequest);
@@ -98,5 +114,4 @@ public class ProtocolRequest {
                     ProtocolConstants.ERR_INVALID_FORMAT);
         }
     }
-
 }
