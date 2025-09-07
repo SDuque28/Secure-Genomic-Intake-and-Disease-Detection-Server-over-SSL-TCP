@@ -1,5 +1,10 @@
 package com.genomic.common;
 
+/**
+ * ProtocolConstants - Defines constants for the genomic communication protocol
+ * Contains command names, response statuses, error codes, and delimiters
+ * Used by both client and server to ensure consistent protocol implementation
+ */
 public class ProtocolConstants {
     public static final String DELIMITER = "|";
 

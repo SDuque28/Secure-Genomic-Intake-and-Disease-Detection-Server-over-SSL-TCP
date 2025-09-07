@@ -12,9 +12,22 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Main - Entry point for the Genomic Server application
+ * Initializes SSL context, loads configuration, and starts the TCP server
+ */
 public class Main {
+
+    /**
+     * Main entry point for the genomic server application
+     *
+     * @param args command line arguments (not currently used)
+     */
     public static void main(String[] args) {
         Properties p = new Properties();
+
+        //Loads configuration properties from file
+        //@throws IOException if configuration file cannot be loaded
         try (InputStream input = Main.class.getClassLoader().getResourceAsStream("configuration.properties")) {
             p.load(input);
             System.out.println("Properties loaded successfully!");
@@ -22,7 +35,7 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-
+        // Creates and configures SSL context for secure communication
         String certificateRoute = p.getProperty("SSL_CERTIFICATE_ROUTE");
         String certificatePassword = p.getProperty("SSL_PASSWORD");
         System.out.println("Certificate route: " + certificateRoute + " and password: " + certificatePassword);

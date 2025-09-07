@@ -16,6 +16,11 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * TCPClient - Handles secure SSL/TLS communication with the genomic server
+ * Manages connection establishment, SSL handshake, and network operations
+ * Supports both single messages and concurrent connection testing
+ */
 public class TCPClient {
     @Getter
     private DataInputStream dataInputStream;
@@ -26,13 +31,23 @@ public class TCPClient {
     private Socket clientSocket;
     private final SSLContext sslContext;
 
-
+    /**
+     * Constructor - Initializes TCP client with server connection details
+     * @param serverAddress IP address or hostname of the genomic server
+     * @param serverPort port number of the genomic server
+     */
     public TCPClient(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.sslContext = createSSLContext();
     }
 
+    /**
+     * Creates and configures SSL context for secure communication
+     * Loads certificate from configuration and sets up trust management
+     *
+     * @return Configured SSLContext instance, or null if initialization fails
+     */
     private SSLContext createSSLContext() {
         try {
             Properties p = new Properties();
@@ -71,6 +86,11 @@ public class TCPClient {
         }
     }
 
+    /**
+     * Establishes secure SSL connection to the server
+     * Performs SSL handshake and initializes data streams
+     * @throws IOException if connection fails or SSL handshake is unsuccessful
+     */
     public void connect() throws IOException {
         if (sslContext == null) {
             throw new IOException("SSL context not initialized");
@@ -95,6 +115,14 @@ public class TCPClient {
         this.dataOutputStream = dataOutputStream;
     }
 
+    /**
+     * Sends a simple test message to the server (legacy method)
+     * Uses format: name:lastName
+     * @param name first name to send
+     * @param lastName last name to send
+     * @return server response as string
+     * @throws IOException if communication fails
+     */
     public String sendMessage(String name, String lastName) throws IOException {
         this.connect();
         String message = name + ":" + lastName;
@@ -105,7 +133,12 @@ public class TCPClient {
         return response;
     }
 
-    // Method to test multiple simultaneous connections
+    /**
+     * Tests multiple simultaneous connections to the server
+     * Useful for load testing and concurrency verification
+     * @param numConnections number of concurrent connections to test
+     * @param baseName base name for test client identification
+     */
     public void testMultipleConnections(int numConnections, String baseName) {
         ExecutorService executor = Executors.newFixedThreadPool(numConnections);
         CountDownLatch latch = new CountDownLatch(numConnections);
@@ -139,6 +172,10 @@ public class TCPClient {
         }
     }
 
+    /**
+     * Safely closes all network connections and streams
+     * Ensures proper resource cleanup to prevent memory leaks
+     */
     public void closeConnection() {
         try {
             if (this.dataInputStream != null) this.dataInputStream.close();

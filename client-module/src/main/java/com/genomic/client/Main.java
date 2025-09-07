@@ -10,7 +10,19 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Main - Primary entry point for the Genomic Client application
+ * Handles SSL configuration and provides a menu-driven interface
+ * for interacting with the genomic server
+ */
 public class Main {
+
+    /**
+     * Main method - Entry point for the genomic client application
+     * Loads configuration, sets up SSL, and provides user interaction menu
+     *
+     * @param args command line arguments (not currently used)
+     */
     public static void main(String[] args) {
         Properties p = new Properties();
         try (InputStream input = Main.class.getClassLoader().getResourceAsStream("configuration.properties")) {
@@ -53,9 +65,12 @@ public class Main {
             return;
         }
 
+        // Initialize TCP client with server connection details
+        // Note: IP address 169.254.7.149 suggests local/testing environment
         TCPClient client = new TCPClient("169.254.7.149", 2020);
         Scanner scanner = new Scanner(System.in);
 
+        // Main application loop for user interaction
         while (true) {
             System.out.println("\n=== Client Menu ===");
             System.out.println("1. Send single message");

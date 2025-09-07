@@ -13,8 +13,16 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * TCPServer - Main server class that handles SSL/TLS connections and client requests
+ * Manages thread pool, SSL configuration, and client connection handling
+ */
 public record TCPServer(int serverPort, SSLContext sslContext) {
 
+    /**
+     * Starts the SSL/TCP server and begins accepting client connections
+     * Initializes thread pool, SSL socket, and enters main accept loop
+     */
     public void start() {
         // Create a thread pool to handle multiple clients
         ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -36,6 +44,9 @@ public record TCPServer(int serverPort, SSLContext sslContext) {
         }
     }
 
+    /**
+     * Configures SSL server socket protocols and cipher suites
+     */
     private SSLServerSocket getSslServerSocket() throws IOException {
         SSLServerSocketFactory sslSocketFactory;
 
@@ -50,7 +61,9 @@ public record TCPServer(int serverPort, SSLContext sslContext) {
         return (SSLServerSocket) sslSocketFactory.createServerSocket(serverPort);
     }
 
-    // Inner class to handle each client connection in a separate thread
+    /**
+     * ClientHandler - Handles individual client connections in separate threads
+     */
     private record ClientHandler(Socket clientSocket) implements Runnable {
         @Override
         public void run() {

@@ -2,23 +2,37 @@ package com.genomic.client;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
+/**
+ * EnhancedClient - Interactive command-line client for the Genomic Server
+ * Provides a user-friendly interface for managing patient genomic data
+ * Supports all CRUD operations and batch processing
+ */
 public class EnhancedClient {
-    private final TCPClient tcpClient;
-    private final ProtocolClient protocolClient;
-    private final Scanner scanner;
+    private final TCPClient tcpClient; // TCP client for server communication
+    private final ProtocolClient protocolClient; // Protocol handler for message formatting
+    private final Scanner scanner; // Scanner for user input
+    private final String address = "127.0.0.1";
 
+    /**
+     * Constructor - Initializes the client components
+     */
     public EnhancedClient() {
-        this.tcpClient = new TCPClient("localhost", 2020);
+        this.tcpClient = new TCPClient(address, 2020);
         this.protocolClient = new ProtocolClient();
         this.scanner = new Scanner(System.in);
     }
 
+    /**
+     * Main interactive mode - Entry point for user interaction
+     * Displays menu and handles user choices in a loop
+     */
     public void startInteractiveMode() {
         System.out.println("=== Genomic Client ===");
-        System.out.println("Connected to server: localhost:2020");
+        System.out.println("Connected to server: " + address);
 
         while (true) {
             printMenu();
@@ -50,6 +64,9 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Displays the main menu options to the user
+     */
     private void printMenu() {
         System.out.println("\n=== Menu ===");
         System.out.println("1. Create Patient");
@@ -61,6 +78,10 @@ public class EnhancedClient {
         System.out.print("Choose an option: ");
     }
 
+    /**
+     * Interactive method to create a new patient
+     * Collects metadata and FASTA sequence from user
+     */
     private void createPatientInteractive() {
         try {
             System.out.println("\n=== Create New Patient ===");
@@ -78,6 +99,10 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Interactive method to create a new patient
+     * Collects metadata and FASTA sequence from user
+     */
     private void getPatientInteractive() {
         try {
             System.out.println("\n=== Get Patient Information ===");
@@ -100,6 +125,10 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Interactive method to update an existing patient
+     * Shows current data and allows partial updates
+     */
     private void updatePatientInteractive() {
         try {
             System.out.println("\n=== Update Patient ===");
@@ -147,6 +176,10 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Interactive method to delete a patient
+     * Includes confirmation prompt for safety
+     */
     private void deletePatientInteractive() {
         try {
             System.out.println("\n=== Delete Patient ===");
@@ -178,6 +211,9 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Sub-menu for batch operations
+     */
     private void batchOperationsInteractive() {
         System.out.println("\n=== Batch Operations ===");
         System.out.println("1. Create Multiple Test Patients");
@@ -197,6 +233,9 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Creates multiple test patients for load testing or demonstration
+     */
     private void createMultipleTestPatients() {
         try {
             System.out.print("How many test patients to create? ");
@@ -207,47 +246,87 @@ public class EnhancedClient {
                 return;
             }
 
-            System.out.println("Creating " + count + " test patients...");
+            // Get the current highest patient number from existing test patients
+            int baseNumber = findHighestTestPatientNumber() + 1;
 
-            for (int i = 1; i <= count; i++) {
-                JSONObject metadata = new JSONObject();
-                metadata.put("fullName", "Test Patient " + i);
-                metadata.put("documentId", "TEST" + String.format("%04d", i));
-                metadata.put("age", 25 + (i % 45));
-                metadata.put("sex", i % 2 == 0 ? "M" : "F");
-                metadata.put("email", "test.patient" + i + "@example.com");
-                metadata.put("clinicalNotes", "Automated test patient #" + i);
+            System.out.println("Creating " + count + " test patients starting from number " + baseNumber + "...");
 
-                String fastaContent = ">test_patient_" + i + "\n" +
+            int successfulCreations = 0;
+            int failedCreations = 0;
+
+            for (int i = 0; i < count; i++) {
+                int patientNumber = baseNumber + i;
+
+                JSONObject metadata = getJsonObject(patientNumber);
+
+                String fastaContent = ">test_patient_" + patientNumber + "\n" +
                         "ACGTACGTGGCCTTAAACCGGTAGCTAGCTAGGCTAGCTAGCTAGCTA\n" +
                         "GCTAGCTAGCGATCGATCGTAAACGTACGTGGCCTTAAACCGGTAGC\n" +
                         "TAGCTAGGCTAGCTAGCTAGCTAGCTAGCTAGCGATCGATCGTAA";
 
-                String response = protocolClient.sendCreatePatient(tcpClient, metadata, fastaContent);
+                try {
+                    String response = protocolClient.sendCreatePatient(tcpClient, metadata, fastaContent);
 
-                if (response.startsWith("SUCCESS")) {
-                    System.out.println("Created patient " + i + "/" + count);
-                } else {
-                    System.out.println("Failed to create patient " + i + ": " + response);
+                    if (response.startsWith("SUCCESS")) {
+                        System.out.println("Created patient " + patientNumber + " (" + (i + 1) + "/" + count + ")");
+                        successfulCreations++;
+                    } else {
+                        System.out.println("Failed to create patient " + patientNumber + ": " + response);
+                        failedCreations++;
+                    }
+
+                    // Small delay to avoid overwhelming the server
+                    Thread.sleep(100);
+
+                } catch (IOException e) {
+                    System.out.println("Network error creating patient " + patientNumber + ": " + e.getMessage());
+                    failedCreations++;
                 }
-
-                // Small delay to avoid overwhelming the server
-                Thread.sleep(100);
             }
 
-            System.out.println("Batch creation completed.");
+            System.out.println("Batch creation completed. Success: " + successfulCreations + ", Failed: " + failedCreations);
 
         } catch (NumberFormatException e) {
             System.out.println("Please enter a valid number.");
-        } catch (IOException e) {
-            System.out.println("Error during batch creation: " + e.getMessage());
         } catch (InterruptedException e) {
             System.out.println("Batch operation interrupted.");
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             System.out.println("Unexpected error: " + e.getMessage());
         }
     }
 
+    /**
+     * Reads patient metadata from user input
+     * @return JSONObject containing patient metadata
+     */
+    private static JSONObject getJsonObject(int patientNumber) {
+        JSONObject metadata = new JSONObject();
+        metadata.put("fullName", "Test Patient " + patientNumber);
+        metadata.put("documentId", "TEST" + String.format("%04d", patientNumber));
+        metadata.put("age", 25 + (patientNumber % 45));
+        metadata.put("sex", patientNumber % 2 == 0 ? "M" : "F");
+        metadata.put("email", "test.patient" + patientNumber + "@example.com");
+        metadata.put("clinicalNotes", "Automated test patient #" + patientNumber);
+        return metadata;
+    }
+
+    /**
+     * Finds the highest test patient number in the existing database
+     * by attempting to retrieve patients and checking their document IDs
+     */
+    private int findHighestTestPatientNumber() {
+        File folder = new File("./server-module/src/main/resources/data/patients");
+        File[] files = folder.listFiles();
+        assert files != null;
+
+        return files.length;
+    }
+
+    /**
+     * We need to see the object parameters for the extraction
+     * @return JSONObject to retrieve the metadata
+     */
     private JSONObject readPatientMetadata() {
         JSONObject metadata = new JSONObject();
 
@@ -272,6 +351,10 @@ public class EnhancedClient {
         return metadata;
     }
 
+    /**
+     * We need to see the object parameters for the extraction
+     * @return JSONObject to retrieve the metadata with defaults
+     */
     private JSONObject readPatientMetadataWithDefaults(JSONObject currentMetadata) {
         JSONObject metadata = new JSONObject();
 
@@ -302,6 +385,10 @@ public class EnhancedClient {
         return metadata;
     }
 
+    /**
+     * Reads multi-line FASTA input until >END marker
+     * @return concatenated FASTA content as String
+     */
     private String readMultilineInput() {
         StringBuilder content = new StringBuilder();
         String line;
@@ -318,6 +405,10 @@ public class EnhancedClient {
         return content.toString().trim();
     }
 
+    /**
+     * Displays server response in user-friendly format
+     * @param response raw response string from server
+     */
     private void displayResponse(String response) {
         if (response.startsWith("SUCCESS|")) {
             System.out.println("✅ SUCCESS: " + response.substring(8));
@@ -335,6 +426,10 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Displays formatted patient information
+     * @param response raw response string from server
+     */
     private void displayFormattedResponse(String response) {
         if (response.startsWith("SUCCESS|")) {
             String jsonPart = response.substring(8);
@@ -361,6 +456,11 @@ public class EnhancedClient {
         }
     }
 
+    /**
+     * Extracts metadata from server response
+     * @param response raw response string from server
+     * @return JSONObject containing patient metadata
+     */
     private JSONObject extractMetadataFromResponse(String response) {
         if (response.startsWith("SUCCESS|")) {
             String jsonPart = response.substring(8);
@@ -373,6 +473,10 @@ public class EnhancedClient {
         return new JSONObject();
     }
 
+    /**
+     * Main method - Entry point for the EnhancedClient
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
         EnhancedClient client = new EnhancedClient();
         client.startInteractiveMode();
