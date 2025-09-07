@@ -9,16 +9,17 @@ public class EnhancedClient {
     private final TCPClient tcpClient;
     private final ProtocolClient protocolClient;
     private final Scanner scanner;
+    private final String address = "192.168.193.250";
 
     public EnhancedClient() {
-        this.tcpClient = new TCPClient("localhost", 2020);
+        this.tcpClient = new TCPClient(address, 2020);
         this.protocolClient = new ProtocolClient();
         this.scanner = new Scanner(System.in);
     }
 
     public void startInteractiveMode() {
         System.out.println("=== Genomic Client ===");
-        System.out.println("Connected to server: localhost:2020");
+        System.out.println("Connected to server: " + address);
 
         while (true) {
             printMenu();
@@ -207,45 +208,100 @@ public class EnhancedClient {
                 return;
             }
 
-            System.out.println("Creating " + count + " test patients...");
+            // Get the current highest patient number from existing test patients
+            int baseNumber = findHighestTestPatientNumber() + 1;
 
-            for (int i = 1; i <= count; i++) {
-                JSONObject metadata = new JSONObject();
-                metadata.put("fullName", "Test Patient " + i);
-                metadata.put("documentId", "TEST" + String.format("%04d", i));
-                metadata.put("age", 25 + (i % 45));
-                metadata.put("sex", i % 2 == 0 ? "M" : "F");
-                metadata.put("email", "test.patient" + i + "@example.com");
-                metadata.put("clinicalNotes", "Automated test patient #" + i);
+            System.out.println("Creating " + count + " test patients starting from number " + baseNumber + "...");
 
-                String fastaContent = ">test_patient_" + i + "\n" +
+            int successfulCreations = 0;
+            int failedCreations = 0;
+
+            for (int i = 0; i < count; i++) {
+                int patientNumber = baseNumber + i;
+
+                JSONObject metadata = getJsonObject(patientNumber);
+
+                String fastaContent = ">test_patient_" + patientNumber + "\n" +
                         "ACGTACGTGGCCTTAAACCGGTAGCTAGCTAGGCTAGCTAGCTAGCTA\n" +
                         "GCTAGCTAGCGATCGATCGTAAACGTACGTGGCCTTAAACCGGTAGC\n" +
                         "TAGCTAGGCTAGCTAGCTAGCTAGCTAGCTAGCGATCGATCGTAA";
 
-                String response = protocolClient.sendCreatePatient(tcpClient, metadata, fastaContent);
+                try {
+                    String response = protocolClient.sendCreatePatient(tcpClient, metadata, fastaContent);
 
-                if (response.startsWith("SUCCESS")) {
-                    System.out.println("Created patient " + i + "/" + count);
-                } else {
-                    System.out.println("Failed to create patient " + i + ": " + response);
+                    if (response.startsWith("SUCCESS")) {
+                        System.out.println("Created patient " + patientNumber + " (" + (i + 1) + "/" + count + ")");
+                        successfulCreations++;
+                    } else {
+                        System.out.println("Failed to create patient " + patientNumber + ": " + response);
+                        failedCreations++;
+                    }
+
+                    // Small delay to avoid overwhelming the server
+                    Thread.sleep(100);
+
+                } catch (IOException e) {
+                    System.out.println("Network error creating patient " + patientNumber + ": " + e.getMessage());
+                    failedCreations++;
                 }
-
-                // Small delay to avoid overwhelming the server
-                Thread.sleep(100);
             }
 
-            System.out.println("Batch creation completed.");
+            System.out.println("Batch creation completed. Success: " + successfulCreations + ", Failed: " + failedCreations);
 
         } catch (NumberFormatException e) {
             System.out.println("Please enter a valid number.");
-        } catch (IOException e) {
-            System.out.println("Error during batch creation: " + e.getMessage());
         } catch (InterruptedException e) {
             System.out.println("Batch operation interrupted.");
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             System.out.println("Unexpected error: " + e.getMessage());
         }
+    }
+
+    private static JSONObject getJsonObject(int patientNumber) {
+        JSONObject metadata = new JSONObject();
+        metadata.put("fullName", "Test Patient " + patientNumber);
+        metadata.put("documentId", "TEST" + String.format("%04d", patientNumber));
+        metadata.put("age", 25 + (patientNumber % 45));
+        metadata.put("sex", patientNumber % 2 == 0 ? "M" : "F");
+        metadata.put("email", "test.patient" + patientNumber + "@example.com");
+        metadata.put("clinicalNotes", "Automated test patient #" + patientNumber);
+        return metadata;
+    }
+
+    /**
+     * Finds the highest test patient number in the existing database
+     * by attempting to retrieve patients and checking their document IDs
+     */
+    private int findHighestTestPatientNumber() {
+        int highestNumber = 0;
+
+        // Try to find existing test patients by checking document IDs
+        for (int i = 1; i <= 10000; i++) { // Reasonable upper limit
+            String testDocumentId = "TEST" + String.format("%04d", i);
+
+            try {
+                // Try to get a patient with this document ID
+                String response = protocolClient.sendGetPatient(tcpClient, "PAT" + String.format("%06d", i));
+
+                if (response.startsWith("SUCCESS")) {
+                    // Patient exists, update the highest number
+                    highestNumber = i;
+                } else if (response.contains("PATIENT_NOT_FOUND")) {
+                    // Patient doesn't exist, stop searching if we've found some previously
+                    if (highestNumber > 0) {
+                        break;
+                    }
+                }
+
+            } catch (IOException e) {
+                // If we can't connect or there's an error, stop searching
+                System.out.println("Error checking for existing patients: " + e.getMessage());
+                break;
+            }
+        }
+
+        return highestNumber;
     }
 
     private JSONObject readPatientMetadata() {

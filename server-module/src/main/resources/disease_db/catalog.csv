@@ -1,9 +1,11 @@
-disease_id,name,severity,filename
-D001,Cystic Fibrosis,8,disease_001.fasta
-D002,Huntington's Disease,9,disease_002.fasta
-D003,Sickle Cell Anemia,7,disease_003.fasta
-D004,Tay-Sachs Disease,9,disease_004.fasta
-D005,Hemochromatosis,5,disease_005.fasta
-D006,Marfan Syndrome,6,disease_006.fasta
-D007,Alpha-1 Antitrypsin Deficiency,4,disease_007.fasta
-D008,Familial Hypercholesterolemia,7,disease_008.fasta
+disease_id,name,severity,filename,description
+D001,Cystic Fibrosis,8,disease_001.fasta,Genetic disorder affecting lungs and digestive system
+D002,Huntington's Disease,9,disease_002.fasta,Neurodegenerative genetic disorder
+D003,Sickle Cell Anemia,7,disease_003.fasta,Red blood cell disorder
+D004,Tay-Sachs Disease,9,disease_004.fasta,Fatal genetic disorder in nerve cells
+D005,Hemochromatosis,5,disease_005.fasta,Iron overload disorder
+D006,Marfan Syndrome,6,disease_006.fasta,Connective tissue disorder
+D007,Alpha-1 Antitrypsin Deficiency,4,disease_007.fasta,Lung and liver disease
+D008,Familial Hypercholesterolemia,7,disease_008.fasta,High cholesterol genetic disorder
+D009,Beta-Thalassemia,6,disease_009.fasta,Blood disorder affecting hemoglobin
+D010,Duchenne Muscular Dystrophy,8,disease_010.fasta,Muscle degeneration disorder
