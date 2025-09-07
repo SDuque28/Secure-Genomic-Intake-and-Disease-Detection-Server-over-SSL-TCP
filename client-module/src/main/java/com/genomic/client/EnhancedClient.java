@@ -9,7 +9,7 @@ public class EnhancedClient {
     private final TCPClient tcpClient;
     private final ProtocolClient protocolClient;
     private final Scanner scanner;
-    private final String address = "192.168.193.250";
+    private final String address = "127.0.0.1";
 
     public EnhancedClient() {
         this.tcpClient = new TCPClient(address, 2020);

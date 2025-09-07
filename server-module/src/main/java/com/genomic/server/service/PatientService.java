@@ -56,18 +56,27 @@ public class PatientService {
     // Add disease checking method:
     private void checkForDiseases(Patient patient, String fastaContent) {
         try {
+            System.out.println("=== DISEASE DETECTION START ===");
+            System.out.println("Checking diseases for patient: " + patient.getPatientId());
+
             // Extract just the sequence part (remove header and newlines)
             String sequence = fastaContent.replaceAll("^>.*\\n", "").replaceAll("\\n", "");
+            System.out.println("Patient sequence length: " + sequence.length());
+            System.out.println("Patient sequence start: " + sequence.substring(0, Math.min(50, sequence.length())));
 
             // Check for matches with similarity threshold of 0.8 (80%)
             List<DiseaseMatchResult> matches = diseaseService.checkForMatches(sequence, 0.8);
+            System.out.println("Found " + matches.size() + " potential matches");
 
             for (DiseaseMatchResult match : matches) {
+                System.out.println("Match detected: " + match.getDescription());
                 diseaseService.generateDiseaseReport(patient.getPatientId(), match);
 
                 System.out.println("Disease detected for patient " + patient.getPatientId() +
                         ": " + match.getDescription());
             }
+
+            System.out.println("=== DISEASE DETECTION END ===");
 
         } catch (Exception e) {
             System.err.println("Error checking for diseases: " + e.getMessage());
@@ -111,6 +120,11 @@ public class PatientService {
             // Store in memory and CSV
             patients.put(patientId, patient);
             savePatientToCsv(patient);
+
+            // === ADD THIS CRITICAL LINE ===
+            // Check for disease matches after saving patient
+            checkForDiseases(patient, fastaContent);
+            // ==============================
 
             return patientId;
 

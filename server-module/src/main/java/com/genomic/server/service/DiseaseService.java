@@ -24,7 +24,22 @@ public class DiseaseService {
         try {
             diseaseDbDirectory = Paths.get("server-module/src/main/resources/disease_db");
             loadDiseasesFromCatalog();
-            System.out.println("Loaded " + diseases.size() + " diseases from catalog");
+            System.out.println("=== DISEASE DATABASE LOADED ===");
+            System.out.println("Loaded " + diseases.size() + " diseases:");
+            for (Disease disease : diseases.values()) {
+                System.out.println(" - " + disease.getDiseaseId() + ": " + disease.getName());
+                try {
+                    String sequence = getDiseaseSequence(disease.getDiseaseId());
+                    if (sequence != null) {
+                        String cleanSeq = sequence.replaceAll("^>.*\\n", "").replaceAll("\\n", "");
+                        System.out.println("   Sequence length: " + cleanSeq.length());
+                        System.out.println("   Sequence start: " + cleanSeq.substring(0, Math.min(50, cleanSeq.length())));
+                    }
+                } catch (IOException e) {
+                    System.out.println("   Error reading sequence: " + e.getMessage());
+                }
+            }
+            System.out.println("=== DISEASE DATABASE END ===");
 
         } catch (IOException e) {
             throw new ProtocolException("Failed to initialize DiseaseService: " + e.getMessage(),
@@ -90,6 +105,8 @@ public class DiseaseService {
     public List<DiseaseMatchResult> checkForMatches(String patientGenome, double similarityThreshold) {
         List<DiseaseMatchResult> matches = new ArrayList<>();
 
+        System.out.println("Checking against " + diseases.size() + " diseases...");
+
         for (Disease disease : diseases.values()) {
             try {
                 String diseaseSequence = getDiseaseSequence(disease.getDiseaseId());
@@ -97,11 +114,20 @@ public class DiseaseService {
                     String cleanDiseaseSeq = diseaseSequence.replaceAll("^>.*\\n", "").replaceAll("\\n", "");
                     String cleanPatientSeq = patientGenome.replaceAll("^>.*\\n", "").replaceAll("\\n", "");
 
+                    System.out.println("Comparing with " + disease.getDiseaseId() + " - " + disease.getName());
+                    System.out.println("Disease sequence length: " + cleanDiseaseSeq.length());
+                    System.out.println("Patient sequence length: " + cleanPatientSeq.length());
+
                     if (SequenceAligner.isPotentialMatch(cleanPatientSeq, cleanDiseaseSeq, similarityThreshold)) {
                         double similarity = calculateSimilarity(cleanPatientSeq, cleanDiseaseSeq);
+                        System.out.println("Similarity with " + disease.getDiseaseId() + ": " + similarity);
+
                         if (similarity >= similarityThreshold) {
                             matches.add(new DiseaseMatchResult(disease, similarity));
+                            System.out.println("✅ MATCH FOUND: " + disease.getName() + " - similarity: " + similarity);
                         }
+                    } else {
+                        System.out.println("No potential match with " + disease.getDiseaseId());
                     }
                 }
             } catch (IOException e) {
