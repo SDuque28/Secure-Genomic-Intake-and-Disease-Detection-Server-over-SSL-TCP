@@ -1,5 +1,7 @@
 package com.genomic.server;
 
+import com.genomic.server.service.*;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -45,6 +47,11 @@ public class Main {
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
 
             System.out.println("SSL Context created successfully with protocol: " + sslContext.getProtocol());
+
+            // Initialize services
+            DiseaseService diseaseService = new DiseaseService();
+            PatientService patientService = new PatientService(diseaseService);
+            System.out.println("Services initialized successfully");
 
             // Pass the SSLContext to your TCPServer
             TCPServer server = new TCPServer(2020, sslContext);

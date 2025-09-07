@@ -1,5 +1,7 @@
 package com.genomic.server;
 
+import com.genomic.server.service.*;
+
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLContext;
@@ -49,42 +51,28 @@ public record TCPServer(int serverPort, SSLContext sslContext) {
     }
 
     // Inner class to handle each client connection in a separate thread
-        private record ClientHandler(Socket clientSocket) implements Runnable {
-
+    private record ClientHandler(Socket clientSocket) implements Runnable {
         @Override
-            public void run() {
-                try (DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
-                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
+        public void run() {
+            try {
+                // Initialize services (you'll need to create PatientService)
+                DiseaseService diseaseService = new DiseaseService();
+                PatientService patientService = new PatientService(diseaseService); // You'll implement this later
 
-                    String message = dis.readUTF();
-                    String[] parts = message.split(":");
-                    System.out.println("[" + Thread.currentThread().getName() + "] Received from " +
-                            clientSocket.getRemoteSocketAddress() + ": " + message);
+                ProtocolHandler protocolHandler = new ProtocolHandler(clientSocket, patientService);
+                protocolHandler.handleRequest();
 
-                    // Simulate some processing time to demonstrate concurrency
-                    try {
-                        Thread.sleep(2000); // 2 seconds processing time
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-
-                    String response = "Name " + parts[0] + " Last Name " + parts[1];
-                    out.writeUTF(response);
-
-                    System.out.println("[" + Thread.currentThread().getName() + "] Response sent to " +
+            } catch (Exception e) {
+                System.out.println("Error handling client " + clientSocket.getRemoteSocketAddress() + ": " + e.getMessage());
+            } finally {
+                try {
+                    clientSocket.close();
+                    System.out.println("[" + Thread.currentThread().getName() + "] Client disconnected: " +
                             clientSocket.getRemoteSocketAddress());
-
                 } catch (IOException e) {
-                    System.out.println("Error handling client " + clientSocket.getRemoteSocketAddress() + ": " + e.getMessage());
-                } finally {
-                    try {
-                        clientSocket.close();
-                        System.out.println("[" + Thread.currentThread().getName() + "] Client disconnected: " +
-                                clientSocket.getRemoteSocketAddress());
-                    } catch (IOException e) {
-                        System.out.println("Error closing client socket: " + e.getMessage());
-                    }
+                    System.out.println("Error closing client socket: " + e.getMessage());
                 }
             }
         }
+    }
 }

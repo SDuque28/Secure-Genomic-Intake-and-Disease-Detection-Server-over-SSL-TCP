@@ -1,35 +1,96 @@
 package com.genomic.client;
 
+import lombok.Getter;
+
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.*;
 import java.net.Socket;
+import java.security.KeyStore;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TCPClient {
+    @Getter
+    private DataInputStream dataInputStream;
+    @Getter
+    private DataOutputStream dataOutputStream;
     private final String serverAddress;
     private final int serverPort;
     private Socket clientSocket;
-    private DataInputStream dataInputStream;
-    private DataOutputStream dataOutputStream;
+    private final SSLContext sslContext;
+
 
     public TCPClient(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
+        this.sslContext = createSSLContext();
+    }
+
+    private SSLContext createSSLContext() {
+        try {
+            Properties p = new Properties();
+            try (InputStream input = TCPClient.class.getClassLoader().getResourceAsStream("configuration.properties")) {
+                p.load(input);
+            } catch (IOException ex) {
+                Logger.getLogger(TCPClient.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+
+            String certificateRoute = p.getProperty("SSL_CERTIFICATE_ROUTE");
+            String certificatePassword = p.getProperty("SSL_PASSWORD");
+
+            // Load the keystore (which will also be our truststore for self-signed cert)
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+            try (InputStream keyStoreStream = TCPClient.class.getClassLoader().getResourceAsStream(certificateRoute)) {
+                if (keyStoreStream == null) {
+                    throw new IOException("Certificate file not found: " + certificateRoute);
+                }
+                keyStore.load(keyStoreStream, certificatePassword.toCharArray());
+            }
+
+            // Setup trust manager factory
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init(keyStore);
+
+            // Create SSL context
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, trustManagerFactory.getTrustManagers(), null);
+
+            return context;
+
+        } catch (Exception e) {
+            System.err.println("Error creating SSL context: " + e.getMessage());
+            return null;
+        }
     }
 
     public void connect() throws IOException {
-        SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        Socket clientSocket = sslSocketFactory.createSocket(serverAddress, serverPort);
-        System.out.println("Connected to server: " + this.serverAddress + ":" + this.serverPort);
-        DataInputStream dataInputStream = new DataInputStream(clientSocket.getInputStream());
-        DataOutputStream dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+        if (sslContext == null) {
+            throw new IOException("SSL context not initialized");
+        }
 
-        // Store in instance variables if needed for other methods
-        this.clientSocket = clientSocket;
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+        SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(serverAddress, serverPort);
+
+        // Configure SSL socket
+        sslSocket.setEnabledCipherSuites(sslSocket.getSupportedCipherSuites());
+        sslSocket.startHandshake();
+
+        System.out.println("Connected to server: " + this.serverAddress + ":" + this.serverPort);
+        System.out.println("SSL handshake completed successfully");
+
+        DataInputStream dataInputStream = new DataInputStream(sslSocket.getInputStream());
+        DataOutputStream dataOutputStream = new DataOutputStream(sslSocket.getOutputStream());
+
+        // Store in instance variables
+        this.clientSocket = sslSocket;
         this.dataInputStream = dataInputStream;
         this.dataOutputStream = dataOutputStream;
     }
