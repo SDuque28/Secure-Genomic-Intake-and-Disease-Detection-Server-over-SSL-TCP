@@ -36,3 +36,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+## SSL Properties ##
+client-module/src/main/resources/configuration.properties
+client-module/src/main/resources/tcp_key.p12
+server-module/src/main/resources/configuration.properties
+server-module/src/main/resources/tcp_key.p12
