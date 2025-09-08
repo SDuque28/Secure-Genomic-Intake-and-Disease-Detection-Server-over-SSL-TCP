@@ -95,6 +95,9 @@ public record ProtocolHandler(Socket clientSocket, PatientService patientService
                     patientService.deletePatient(request.getPatientId());
                     return ProtocolResponse.success("Patient deleted successfully");
 
+                case ProtocolConstants.CMD_GET_PATIENT_COUNT:
+                    return ProtocolResponse.success("Patient count:" + patientService.getTotalPatientCount());
+
                 default:
                     return ProtocolResponse.error(
                             ProtocolConstants.ERR_INVALID_FORMAT, "Unknown command: " + request.getCommand());

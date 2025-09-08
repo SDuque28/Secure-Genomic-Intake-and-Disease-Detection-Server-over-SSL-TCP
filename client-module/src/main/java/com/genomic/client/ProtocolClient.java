@@ -71,6 +71,28 @@ public class ProtocolClient {
         return response;
     }
 
+    public int sendGetAllPatients(TCPClient tcpClient) throws IOException {
+        tcpClient.connect();
+
+        DataOutputStream dos = tcpClient.getDataOutputStream();
+        DataInputStream dis = tcpClient.getDataInputStream();
+
+        String request = "GET_PATIENT_COUNT";
+
+        System.out.println("Sending GET ALL request: " + request);
+        dos.writeUTF(request);
+
+        String response = dis.readUTF();
+        System.out.println("Received GET ALl response: " + response);
+
+        String[] parts = response.split(":");
+        String numberStr = parts[1].trim();
+
+        tcpClient.closeConnection();
+
+        return Integer.parseInt(numberStr);
+    }
+
     /**
      * Sends an UPDATE_PATIENT request to the server
      * Updates existing patient information and optionally updates genomic data

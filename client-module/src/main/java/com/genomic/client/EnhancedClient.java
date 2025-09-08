@@ -15,7 +15,7 @@ public class EnhancedClient {
     private final TCPClient tcpClient; // TCP client for server communication
     private final ProtocolClient protocolClient; // Protocol handler for message formatting
     private final Scanner scanner; // Scanner for user input
-    private final String address = "127.0.0.1";
+    private final String address = "192.168.193.250";
 
     /**
      * Constructor - Initializes the client components
@@ -247,7 +247,7 @@ public class EnhancedClient {
             }
 
             // Get the current highest patient number from existing test patients
-            int baseNumber = findHighestTestPatientNumber() + 1;
+            int baseNumber = protocolClient.sendGetAllPatients(tcpClient) + 1;
 
             System.out.println("Creating " + count + " test patients starting from number " + baseNumber + "...");
 
@@ -316,11 +316,48 @@ public class EnhancedClient {
      * by attempting to retrieve patients and checking their document IDs
      */
     private int findHighestTestPatientNumber() {
-        File folder = new File("./server-module/src/main/resources/data/patients");
-        File[] files = folder.listFiles();
-        assert files != null;
+        int highestNumber = 0;
+        int consecutiveMissing = 0;
+        int maxConsecutiveMissing = 2; // Stop after 5 consecutive missing patients
 
-        return files.length;
+        for (int i = 1; i <= 1000; i++) {
+            String patientId = "PAT" + String.format("%06d", i);
+
+            try {
+                String response = protocolClient.sendGetPatient(tcpClient, patientId);
+
+                if (response.startsWith("SUCCESS")) {
+                    // Patient exists and is active
+                    highestNumber = i;
+                    consecutiveMissing = 0; // Reset counter
+                    System.out.println("Found active patient: " + patientId);
+                } else if (response.startsWith("ERROR")) {
+                    // Patient not found or inactive
+                    consecutiveMissing++;
+                    System.out.println("Patient not found: " + patientId + " (" + consecutiveMissing + " consecutive missing)");
+
+                    // If we've found enough consecutive missing patients, stop searching
+                    if (consecutiveMissing >= maxConsecutiveMissing && highestNumber > 0) {
+                        System.out.println("Stopping search after " + maxConsecutiveMissing + " consecutive missing patients");
+                        break;
+                    }
+                }
+
+            } catch (IOException e) {
+                System.out.println("Network error checking patient " + patientId + ": " + e.getMessage());
+                break;
+            }
+
+            // Small delay to avoid overwhelming server
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        return highestNumber;
     }
 
     /**

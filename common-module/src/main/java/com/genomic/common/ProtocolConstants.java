@@ -13,6 +13,7 @@ public class ProtocolConstants {
     public static final String CMD_GET_PATIENT = "GET_PATIENT";
     public static final String CMD_UPDATE_PATIENT = "UPDATE_PATIENT";
     public static final String CMD_DELETE_PATIENT = "DELETE_PATIENT";
+    public static final String CMD_GET_PATIENT_COUNT = "GET_PATIENT_COUNT";
 
     // Responses
     public static final String RESP_SUCCESS = "SUCCESS";

@@ -174,6 +174,15 @@ public class PatientService {
     }
 
     /**
+     * Gets the total count of all patients (active and inactive)
+     *
+     * @return total number of patients
+     */
+    public int getTotalPatientCount() {
+        return patients.size();
+    }
+
+    /**
      * Updates an existing patient's information
      * @param patientId the patient identifier
      * @param metadata updated patient metadata
