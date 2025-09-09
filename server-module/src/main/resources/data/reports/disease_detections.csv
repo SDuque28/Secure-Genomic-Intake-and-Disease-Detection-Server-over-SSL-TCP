@@ -35,3 +35,15 @@ PAT000020,D007,Alpha-1 Antitrypsin Deficiency,4,1.0000,2025-09-07T17:09:08.38616
 PAT000021,D003,Sickle Cell Anemia,7,1.0000,2025-09-07T17:09:08.566349600,Genomic similarity (100.00%) detected with Sickle Cell Anemia (Severity: 7/10)
 PAT000021,D008,Familial Hypercholesterolemia,7,0.9714,2025-09-07T17:09:08.568350400,Genomic similarity (97.14%) detected with Familial Hypercholesterolemia (Severity: 7/10)
 PAT000021,D007,Alpha-1 Antitrypsin Deficiency,4,1.0000,2025-09-07T17:09:08.569348300,Genomic similarity (100.00%) detected with Alpha-1 Antitrypsin Deficiency (Severity: 4/10)
+PAT000022,D003,Sickle Cell Anemia,7,1,0000,2025-09-08T18:51:17.802224,"Genomic similarity (100,00%) detected with Sickle Cell Anemia (Severity: 7/10)"
+PAT000022,D008,Familial Hypercholesterolemia,7,0,9714,2025-09-08T18:51:17.808237300,"Genomic similarity (97,14%) detected with Familial Hypercholesterolemia (Severity: 7/10)"
+PAT000022,D007,Alpha-1 Antitrypsin Deficiency,4,1,0000,2025-09-08T18:51:17.811235200,"Genomic similarity (100,00%) detected with Alpha-1 Antitrypsin Deficiency (Severity: 4/10)"
+PAT000023,D003,Sickle Cell Anemia,7,1,0000,2025-09-08T18:53:16.300609,"Genomic similarity (100,00%) detected with Sickle Cell Anemia (Severity: 7/10)"
+PAT000023,D008,Familial Hypercholesterolemia,7,0,9714,2025-09-08T18:53:16.304604400,"Genomic similarity (97,14%) detected with Familial Hypercholesterolemia (Severity: 7/10)"
+PAT000023,D007,Alpha-1 Antitrypsin Deficiency,4,1,0000,2025-09-08T18:53:16.306608300,"Genomic similarity (100,00%) detected with Alpha-1 Antitrypsin Deficiency (Severity: 4/10)"
+PAT000024,D003,Sickle Cell Anemia,7,1,0000,2025-09-08T18:53:17.968968800,"Genomic similarity (100,00%) detected with Sickle Cell Anemia (Severity: 7/10)"
+PAT000024,D008,Familial Hypercholesterolemia,7,0,9714,2025-09-08T18:53:17.976984800,"Genomic similarity (97,14%) detected with Familial Hypercholesterolemia (Severity: 7/10)"
+PAT000024,D007,Alpha-1 Antitrypsin Deficiency,4,1,0000,2025-09-08T18:53:17.982981400,"Genomic similarity (100,00%) detected with Alpha-1 Antitrypsin Deficiency (Severity: 4/10)"
+PAT000025,D003,Sickle Cell Anemia,7,1,0000,2025-09-08T18:53:19.573711600,"Genomic similarity (100,00%) detected with Sickle Cell Anemia (Severity: 7/10)"
+PAT000025,D008,Familial Hypercholesterolemia,7,0,9714,2025-09-08T18:53:19.604708400,"Genomic similarity (97,14%) detected with Familial Hypercholesterolemia (Severity: 7/10)"
+PAT000025,D007,Alpha-1 Antitrypsin Deficiency,4,1,0000,2025-09-08T18:53:19.646715500,"Genomic similarity (100,00%) detected with Alpha-1 Antitrypsin Deficiency (Severity: 4/10)"

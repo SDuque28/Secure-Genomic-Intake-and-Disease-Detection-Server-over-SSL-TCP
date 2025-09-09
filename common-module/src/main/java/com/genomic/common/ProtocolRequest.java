@@ -103,6 +103,10 @@ public class ProtocolRequest {
                     this.patientId = parts[1].trim();
                     break;
 
+                case ProtocolConstants.CMD_GET_PATIENT_COUNT:
+                    this.patientId = parts[0].trim();
+                    break;
+
                 default:
                     throw new ProtocolException("Unknown command: " + command,
                             ProtocolConstants.ERR_INVALID_FORMAT);

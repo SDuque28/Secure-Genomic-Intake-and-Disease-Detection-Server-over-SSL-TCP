@@ -20,3 +20,7 @@ PAT000018,test18,214hjhj32,43,F,nose@gmail.com,1757279323996,test enfermedad,fba
 PAT000019,Test Patient 16,TEST0016,41,M,test.patient16@example.com,1757279575582,Automated test patient #16,602c58824c86ab355da42a89a97e4199f4ed191ae1d43903a2dc9d0971b387b6,159,true,PAT000019.fasta
 PAT000020,Test Patient 20,TEST0020,45,M,test.patient20@example.com,1757282948360,Automated test patient #20,7f6e887d5dd58f00a289a2c99007ae77b6a951ba52ceea5efdc2217023e602ee,159,true,PAT000020.fasta
 PAT000021,Test Patient 21,TEST0021,46,F,test.patient21@example.com,1757282948534,Automated test patient #21,eaa27fab39a276929ac9c1452bea81fb9b5965cd3cfbef3a7f9d3825173aaa6c,159,true,PAT000021.fasta
+PAT000022,Test Patient 22,TEST0022,47,M,test.patient22@example.com,1757375477580,Automated test patient #22,e4fbe30c6f34c00d6080cf880bcb40467e8b677b156a28321717314becbc6ad5,159,true,PAT000022.fasta
+PAT000023,Test Patient 23,TEST0023,48,F,test.patient23@example.com,1757375596255,Automated test patient #23,5b8617918fbbd9a9a41b781ecaf385eb5ed98f0976499626a3c884eb3ff3ff27,159,true,PAT000023.fasta
+PAT000024,Test Patient 24,TEST0024,49,M,test.patient24@example.com,1757375597826,Automated test patient #24,404a4e2e140e9692b9c88d99c48020519ddae2389b60a6969aec1ad17a0ef9e4,159,true,PAT000024.fasta
+PAT000025,Test Patient 25,TEST0025,50,F,test.patient25@example.com,1757375599407,Automated test patient #25,7f15a6960adcfa18c2febcabcf4d7417f3ba275c18820e248965dd36328eafff,159,true,PAT000025.fasta
