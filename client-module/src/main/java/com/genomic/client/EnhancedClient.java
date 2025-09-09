@@ -247,6 +247,7 @@ public class EnhancedClient {
             }
 
             // Get the current highest patient number from existing test patients
+            System.out.println(protocolClient.sendGetAllPatients(tcpClient));
             int baseNumber = protocolClient.sendGetAllPatients(tcpClient) + 1;
 
             System.out.println("Creating " + count + " test patients starting from number " + baseNumber + "...");
@@ -287,7 +288,7 @@ public class EnhancedClient {
             System.out.println("Batch creation completed. Success: " + successfulCreations + ", Failed: " + failedCreations);
 
         } catch (NumberFormatException e) {
-            System.out.println("Please enter a valid number.");
+            System.out.println("Please enter a valid number." + e.getMessage());
         } catch (InterruptedException e) {
             System.out.println("Batch operation interrupted.");
             Thread.currentThread().interrupt();

@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * ProtocolClient - Handles the communication protocol between client and genomic server
@@ -86,11 +87,13 @@ public class ProtocolClient {
         System.out.println("Received GET ALl response: " + response);
 
         String[] parts = response.split(":");
-        String numberStr = parts[1].trim();
+        String numberStr = parts[2].trim();
+        String cleanNumber = numberStr.replaceAll("[^0-9]", "");
+        System.out.println(cleanNumber);
 
         tcpClient.closeConnection();
 
-        return Integer.parseInt(numberStr);
+        return Integer.parseInt(cleanNumber);
     }
 
     /**

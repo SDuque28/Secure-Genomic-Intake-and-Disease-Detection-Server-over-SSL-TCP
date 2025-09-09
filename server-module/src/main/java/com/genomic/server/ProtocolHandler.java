@@ -96,6 +96,7 @@ public record ProtocolHandler(Socket clientSocket, PatientService patientService
                     return ProtocolResponse.success("Patient deleted successfully");
 
                 case ProtocolConstants.CMD_GET_PATIENT_COUNT:
+                    System.out.println("Patient count:" + patientService.getTotalPatientCount());
                     return ProtocolResponse.success("Patient count:" + patientService.getTotalPatientCount());
 
                 default:
