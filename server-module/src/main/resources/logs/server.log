@@ -1,8 +1,0 @@
-[2025-09-07 00:15:48] [INFO] [Thread-main] Server started on port 2020 using SSL/TCP protocol
-[2025-09-07 00:15:48] [INFO] [Thread-main] Initializing Genomic Server...
-[2025-09-07 00:15:48] [INFO] [Thread-main] Configuration loaded successfully from: configuration.properties
-[2025-09-07 00:15:48] [INFO] [Thread-main] Loading SSL certificate: tcp_key.p12
-[2025-09-07 00:15:49] [INFO] [Thread-main] SSL Context created successfully with protocol: TLS
-[2025-09-07 00:15:49] [INFO] [Thread-main] Starting TCP Server on port 2020...
-[2025-09-07 00:23:50] [INFO] [Thread-Thread-0] Server shutdown initiated
-[2025-09-07 00:23:50] [INFO] [Thread-Thread-0] Server shutdown completed
